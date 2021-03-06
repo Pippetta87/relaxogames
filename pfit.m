@@ -2,6 +2,7 @@ function [rHH,tc]=pfit(xdata,ydata,rHH0,tc0)
 %Create x and y values
 global gammaH;
 global hbarSI;
+global hbarcgs;
 %xdata=omegaexp;
 %ydata=rexp;
 %w0=linspace(min(xdata),max(xdata),1000);
@@ -27,8 +28,9 @@ p0 = [rHH0;tc0]
 result = fminsearch(lor2parwou,p0)
 chisqr=lor2parwou(result)
 %,'MaxFunEvals',10^4,'MaxIter',10^4)
-(result(1)/(3/10*((gammaH)^2*hbarSI)^2))^-1/6
-(result(1)/(3/10*((gammaH)^2*hbarSI/((10^-8)^3))^2))^-1/6
+(result(1)/(3/10*((gammaH)^2*hbarcgs)^2))^(-1/6)
+(result(1)/(3/10*((gammaH)^2*hbarcgs/((10^-8)^3))^2))^(-1/6)
+((3/10)*((gammaH)^4*(hbarcgs)^2)/10^8)^(1/6)
 plot(xdata, ydata, 'k.')
 hold on
 plot(xdata, lor2parwou_eval(result, xdata), 'r')
