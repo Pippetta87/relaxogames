@@ -49,24 +49,48 @@ L=find(abs(ydata-min(ydata))<0.2)
 %X=fminsearch(chiquadro,[round(length(obscut)/2);1;5000;100])
 global datalength=length(xdata)
 function zeroing=P2P(p)
-global datalength
+%global datalength
 global ydata
 global xdata
+%datalength=length(find(ydata<=max(ydata)))
+points=find(ydata>=max(ydata)-2.8);
+points=[[1:4] [13:length(xdata)]]
+ydata(points)
+datalength=length(points)
 adim = p(1)*(p(2)./(1+xdata.^2*p(2)^2)+4*p(2)./(1+4*xdata.^2*p(2)^2))+p(3);
+zeroing([1:datalength])=(ydata(points([1:datalength]))-adim(points([1:datalength]))).^2
+zeroing(datalength+1)=max(10^5-p(1),0)
+zeroing(datalength+2)=max(-10^9+p(1),0)
+zeroing(datalength+3)=max(-10^-6+p(2),0)
+zeroing(datalength+4)=max(10^-9-p(2),0)
+zeroing(datalength+5)=max(-p(2),0)
+endfunction
+function zeroing=P2Plin(p)
+global datalength
+%datalength=10;
+global ydata
+global xdata
+adim = p(1)*(p(2)./(1+xdata.^2*p(2)^2)+4*p(2)./(1+4*xdata.^2*p(2)^2))+p(3)+p(4)*x;
 zeroing([1:datalength])=(ydata([1:datalength])-adim([1:datalength])).^2;
-zeroing(datalength+1)=max(10^5-p(1),0);
-zeroing(datalength+2)=max(-10^9+p(1),0);
-zeroing(datalength+3)=max(-10^-6+p(2),0);
-zeroing(datalength+4)=max(10^-9-p(2),0);
+zeroing(datalength+1)=max(10^4-p(1),0);
+zeroing(datalength+2)=max(-10^10+p(1),0);
+zeroing(datalength+3)=max(-10^-5+p(2),0);
+zeroing(datalength+4)=max(10^-10-p(2),0);
 zeroing(datalength+5)=max(-p(2),0)
 endfunction
 plot(xdata,ydata,'.')
-hold on
-p0_adim = [10^7,8.8*10^-8,0];
-options.TolFun=10^-40;options.TolX=10^-40;
+hold on;
+p0_adim = [10^7,10^-8,1];
+p0_adim_lin = [10^6,10^-8,1,0];
+options = optimset ("fsolve")
+options.TolFun=10^-1;
+options.TolX=10^-1;
+%options.MaxFunEvals=100000
 %options = optimset('MaxFunEvals',10000,'MaxIter',10000);
 %result_adim = fminsearch(@(p)adimobjective(p,xdata(U),ydata(U)), p0_adim,options)
 %result_adim = fminsearch(@(p)adimobjective(p,xdata(L),ydata(L)), p0_adim,options)
-[relaxpar,info]=fsolve("P2P", [10^6 10^-8 1]',options);%vector of param
-semilogx(xdata, adim(relaxpar, xdata), 'r')
+[relaxpar,fval,info]=fsolve("P2P", p0_adim,options);%vector of param
+%[relaxpar_lin,info]=fsolve("P2Plin", p0_adim_lin,options);%vector of param
+semilogx(xdata, adim(relaxpar, xdata), 'r');
+%semilogx(xdata, adim_lin(relaxpar_lin, xdata), 'g')
 
