@@ -30,6 +30,7 @@ dataribo=csvread('ribo.csv');
 dataferrante=csvread('Ferrante.csv');
 omegaferrante=dataferrante(:,1)*2*pi*10^6
 R1alb=dataferrante(:,3)
+R1D=dataferrante(:,4)
 R1H=dataferrante(:,5)
 omegarib=dataribo(:,1)
 R1rib=dataribo(:,2)
@@ -42,7 +43,7 @@ adim = @(param,x) param(1)*(param(2)./(1+x.^2*param(2)^2)+4*param(2)./(1+4*x.^2*
 adim_lin = @(param,x) param(1)*(param(2)./(1+x.^2*param(2)^2)+4*param(2)./(1+4*x.^2*param(2)^2))+param(3)+param(4)*x;
 adimobjective_lin = @(param,x,y) sum((y-adim_lin(param,x)).^2./y);
 global xdata=omegaferrante
-global ydata=R1H
+global ydata=R1D
 U=find(abs(ydata-max(ydata))<0.2)
 L=find(abs(ydata-min(ydata))<0.2)
    chiquadro=@(p) sum((adim(p,xdata)).^2./ydata);
@@ -78,19 +79,33 @@ zeroing(datalength+3)=max(-10^-5+p(2),0);
 zeroing(datalength+4)=max(10^-10-p(2),0);
 zeroing(datalength+5)=max(-p(2),0)
 endfunction
+fh=figure;
 plot(xdata,ydata,'.')
-hold on;
-p0_adim = [10^7,10^-8,1];
-p0_adim_lin = [10^6,10^-8,1,0];
-options = optimset ("fsolve")
-options.TolFun=10^-1;
-options.TolX=10^-1;
-%options.MaxFunEvals=100000
+%<<<<<<< HEAD
+%hold on;
+%p0_adim = [10^7,10^-8,1];
+%p0_adim_lin = [10^6,10^-8,1,0];
+%options = optimset ("fsolve")
+%options.TolFun=10^-1;
+%options.TolX=10^-1;
+%%options.MaxFunEvals=100000
+%%options = optimset('MaxFunEvals',10000,'MaxIter',10000);
+%%result_adim = fminsearch(@(p)adimobjective(p,xdata(U),ydata(U)), p0_adim,options)
+%%result_adim = fminsearch(@(p)adimobjective(p,xdata(L),ydata(L)), p0_adim,options)
+%[relaxpar,fval,info]=fsolve("P2P", p0_adim,options);%vector of param
+%%[relaxpar_lin,info]=fsolve("P2Plin", p0_adim_lin,options);%vector of param
+%semilogx(xdata, adim(relaxpar, xdata), 'r');
+%%semilogx(xdata, adim_lin(relaxpar_lin, xdata), 'g')
+%
+%=======
+hold on
+p0_adim = [0.5*10^7,2*10^-7,0];
+options.TolFun=10^-40;options.TolX=10^-40;
 %options = optimset('MaxFunEvals',10000,'MaxIter',10000);
 %result_adim = fminsearch(@(p)adimobjective(p,xdata(U),ydata(U)), p0_adim,options)
 %result_adim = fminsearch(@(p)adimobjective(p,xdata(L),ydata(L)), p0_adim,options)
-[relaxpar,fval,info]=fsolve("P2P", p0_adim,options);%vector of param
-%[relaxpar_lin,info]=fsolve("P2Plin", p0_adim_lin,options);%vector of param
+[relaxpar,info]=fsolve("P2P", [10^6 10^-8 1]',options);%vector of param
 semilogx(xdata, adim(relaxpar, xdata), 'r');
-%semilogx(xdata, adim_lin(relaxpar_lin, xdata), 'g')
-
+legend("$R_1^{NS}$ misurato", "$R_1^{NS}(\\tau_c)$",'Interpreter','latex')
+saveas(fh,"R1D.png");
+%>>>>>>> temp-branch
